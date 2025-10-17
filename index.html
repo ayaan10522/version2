@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mutual Fund Screener - Single File</title>
+<style>
+/* Minimal reset */
+html, body { height: 100%; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:#0b0f14; color:#e6edf3; }
+/* Layout */
+.container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.title { font-size: 20px; font-weight: 700; }
+.controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+input, select, button { background:#0f1720; color:#e6edf3; border:1px solid #2a3340; border-radius:8px; padding:10px 12px; font-size:14px; }
+button { background:#1d4ed8; border-color:#1d4ed8; cursor:pointer; }
+button.secondary { background:#0f1720; border-color:#2a3340; }
+button:disabled { opacity:.6; cursor:not-allowed; }
+.grid { display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; }
+.card { background:#0f1720; border:1px solid #1f2937; border-radius:12px; padding:12px; }
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-4 { grid-column: span 4; }
+@media (max-width: 960px) {
+  .col-8, .col-4 { grid-column: span 12; }
+}
+.section-title { font-weight:700; margin-bottom:8px; font-size:14px; color:#9fb3c8; letter-spacing:.02em; text-transform:uppercase; }
+.row { display:flex; flex-wrap:wrap; gap:8px; }
+.metric { background:#0b1220; border:1px solid #1f2a3a; border-radius:10px; padding:10px; flex:1 1 160px; min-width:140px; }
+.metric .label { color:#9fb3c8; font-size:12px; }
+.metric .value { font-weight:700; margin-top:4px; font-size:16px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #2a3340; background:#0b1220; color:#cfe3f7; font-size:12px; }
+.list { display:grid; gap:8px; }
+.list-item { display:flex; align-items:center; justify-content:space-between; padding:10px; border:1px solid #1f2937; border-radius:8px; background:#0b1220; cursor:pointer; }
+.list-item:hover { border-color:#2b3b52; }
+.muted { color:#9fb3c8; }
+.danger { color:#ef4444; }
+.success { color:#22c55e; }
+.warn { color:#f59e0b; }
+canvas { width:100%; height:280px; background:#0b1220; border:1px solid #1f2937; border-radius:8px; }
+.hint { font-size:12px; color:#9fb3c8; }
+.kbd { border:1px solid #2a3340; background:#0b1220; padding:1px 6px; border-radius:6px; font-size:12px; }
+.footer { text-align:center; color:#8699ac; font-size:12px; padding:24px 0; }
+.spinner { display:inline-block; width:16px; height:16px; border:2px solid #2a3340; border-top-color:#5ca1ff; border-radius:50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.two-col { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+@media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+.small { font-size:12px; }
+ul.plain { list-style:none; padding-left:0; margin:0; }
+ul.plain li { padding:6px 0; border-bottom:1px dashed #1f2937; }
+ul.plain li:last-child { border-bottom:0; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">Mutual Fund Screener</div>
+      <div class="controls">
+        <input id="search" type="text" placeholder="Search fund or AMC (e.g. Nippon, Flexi)" />
+        <select id="category">
+          <option value="">All Categories</option>
+          <option>Equity</option>
+          <option>Debt</option>
+          <option>Hybrid</option>
+          <option>Sectoral/Thematic</option>
+          <option>Solution Oriented</option>
+          <option>Other</option>
+        </select>
+        <select id="plan">
+          <option value="">All Plans</option>
+          <option value="Regular">Regular</option>
+          <option value="Direct">Direct</option>
+        </select>
+        <select id="option">
+          <option value="">Growth/IDCWs</option>
+          <option value="Growth">Growth</option>
+          <option value="IDCWs">Dividend/IDCW</option>
+        </select>
+        <select id="subcategory">
+          <option value="">All Subcategories</option>
+          <optgroup label="Equity fund">
+            <option>Multi Cap Funds</option>
+            <option>Large cap</option>
+            <option>Large and mid cap</option>
+            <option>Mid cap</option>
+            <option>Small cap</option>
+            <option>Dividend Yield Funds</option>
+            <option>Value fund</option>
+            <option>Contra fund</option>
+            <option>Sectoral</option>
+            <option>Thematic</option>
+            <option>Equity Linked Savings Scheme (ELSS)</option>
+          </optgroup>
+          <optgroup label="Debt mutual fund">
+            <option>Overnight fund</option>
+            <option>Liquid fund</option>
+            <option>Ultra short duration fund</option>
+            <option>Low duration funds</option>
+            <option>Money market fund</option>
+            <option>Short duration fund</option>
+            <option>Medium duration fund</option>
+            <option>Medium to long duration fund</option>
+            <option>Long duration fund</option>
+            <option>Dynamic bonds</option>
+            <option>Corporate bond</option>
+            <option>Credit risk fund</option>
+            <option>Banking and psu fund</option>
+            <option>Glit fund</option>
+            <option>Glit fund-10 year</option>
+            <option>Floater fund</option>
+          </optgroup>
+          <optgroup label="Hybrid fund">
+            <option>Conservative Hybrid Fund</option>
+            <option>Balance hybrid fund</option>
+            <option>Aggressive hybrid fund</option>
+            <option>Dynamic asset allocation</option>
+            <option>Balance advantage fund</option>
+            <option>Multi asset allocation fund</option>
+            <option>Arbitrage fund</option>
+            <option>Equity saving</option>
+          </optgroup>
+          <optgroup label="Solution oriented">
+            <option>Retired fund</option>
+            <option>Childern fund</option>
+          </optgroup>
+          <optgroup label="Other scheme">
+            <option>Index fund</option>
+            <option>FoF</option>
+          </optgroup>
+        </select>
+        <button id="refresh">Refresh</button>
+        <span id="lastUpdated" class="muted small" style="margin-left:4px;">Last updated: —</span>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:12px;">
+      <div class="card col-4">
+        <div class="section-title">Funds</div>
+        <div class="hint">Click a fund to view details. Type to filter. <span class="kbd">⌘/Ctrl + K</span> to focus search.</div>
+        <div id="fundList" class="list" style="margin-top:10px; max-height:70vh; overflow:auto;"></div>
+      </div>
+      <div class="card col-8">
+        <div class="section-title">Overview</div>
+        <div id="fundHeader" class="row" style="align-items:center; gap:12px;">
+          <div id="fundName" style="font-size:18px; font-weight:700;">Select a fund</div>
+          <div id="fundMeta" class="badge"></div>
+          <div id="fundISIN" class="badge"></div>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <div class="metric"><div class="label">Category</div><div id="mCategory" class="value">-</div></div>
+          <div class="metric"><div class="label">Subcategory</div><div id="mSubcategory" class="value">-</div></div>
+          <div class="metric"><div class="label">Alpha (1Y)</div><div id="mAlpha" class="value">-</div></div>
+          <div class="metric"><div class="label">Beta (1Y)</div><div id="mBeta" class="value">-</div></div>
+          <div class="metric"><div class="label">Sharpe (1Y)</div><div id="mSharpe" class="value">-</div></div>
+          <div class="metric"><div class="label">Std Dev (1Y)</div><div id="mStd" class="value">-</div></div>
+          <div class="metric"><div class="label">Expense Ratio</div><div id="mExpense" class="value">- <span class="muted small">(source required)</span></div></div>
+          <div class="metric"><div class="label">Exit Load</div><div id="mExitLoad" class="value">- <span class="muted small">(source required)</span></div></div>
+          <div class="metric"><div class="label">AUM</div><div id="mAUM" class="value">- <span class="muted small">(source required)</span></div></div>
+          <div class="metric"><div class="label">Fund Manager</div><div id="mManager" class="value">- <span class="muted small">(source required)</span></div></div>
+          <div class="metric"><div class="label">NAV (Latest)</div><div id="mNAV" class="value">-</div></div>
+          <div class="metric"><div class="label">Rating</div><div id="mRating" class="value">- <span class="muted small">(computed)</span></div></div>
+          <div class="metric"><div class="label">Category Benchmark</div><div id="mBenchmark" class="value">NIFTY 50 TRI <span class="muted small">(proxy)</span></div></div>
+        </div>
+
+        <div class="two-col" style="margin-top:12px;">
+          <div class="card">
+            <div class="section-title">Performance vs Benchmark</div>
+            <canvas id="perfChart" height="280"></canvas>
+            <div class="hint" style="margin-top:8px;">Benchmark uses proxy index NAV from `mfapi.in` where available, else synthetic 10% CAGR for demo. Alpha/Beta/Sharpe are based on daily log returns over the selected window.</div>
+          </div>
+          <div class="card">
+            <div class="section-title">Asset Allocation & Holdings</div>
+            <div class="row">
+              <div class="metric"><div class="label">Equity</div><div id="allocEquity" class="value">-</div></div>
+              <div class="metric"><div class="label">Debt</div><div id="allocDebt" class="value">-</div></div>
+              <div class="metric"><div class="label">Cash</div><div id="allocCash" class="value">-</div></div>
+            </div>
+            <div style="margin-top:8px;" class="hint">Detailed allocation/holdings require additional data sources. Displaying placeholders.</div>
+            <ul id="holdings" class="plain" style="margin-top:8px;"></ul>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+          <div class="section-title">Tax Impact</div>
+          <div class="hint">Approximate rules: Equity funds (≥65% equity): STCG 15% (&lt;= 1 year), LTCG 10% (&gt;1 year beyond ₹1L gains). Debt/Other: taxes per slab with indexation depending on rule changes. This is informational only.</div>
+          <div class="row" style="margin-top:8px;">
+            <div class="metric"><div class="label">Type</div><div id="taxType" class="value">-</div></div>
+            <div class="metric"><div class="label">STCG</div><div id="taxSTCG" class="value">-</div></div>
+            <div class="metric"><div class="label">LTCG</div><div id="taxLTCG" class="value">-</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer">Data sourced live from public AMFI mirror `mfapi.in` where available. This tool is for information only and not investment advice.</div>
+  </div>
+
+<script>
+// Utilities
+const qs = (sel) => document.querySelector(sel);
+const qsa = (sel) => Array.from(document.querySelectorAll(sel));
+const fmtPct = (x, digits = 2) => (isFinite(x) ? (x*100).toFixed(digits) + '%' : '-');
+const fmtNum = (x, digits = 2) => (isFinite(x) ? Number(x).toFixed(digits) : '-');
+const fmtINR = (x) => {
+  if (!isFinite(x)) return '-';
+  return new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format(x);
+};
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+// Simple chart renderer without external libs
+function renderLineChart(canvas, series, opts = {}) {
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width = canvas.clientWidth * devicePixelRatio;
+  const height = canvas.height = canvas.clientHeight * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  // Margin
+  const m = { l: 40, r: 12, t: 8, b: 20 };
+  const w = canvas.clientWidth - m.l - m.r;
+  const h = canvas.clientHeight - m.t - m.b;
+  // X scale
+  const n = Math.max(0, ...series.map(s => s.values.length));
+  const xFor = (i) => m.l + (n <= 1 ? 0 : (i * w) / (n - 1));
+  // Y scale
+  let all = [];
+  series.forEach(s => all = all.concat(s.values.filter(v => isFinite(v))));
+  const minY = Math.min(...all);
+  const maxY = Math.max(...all);
+  const yFor = (v) => m.t + h - ((v - minY) / (maxY - minY || 1)) * h;
+  // Grid
+  ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = m.t + (i * h) / 4;
+    ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(m.l + w, y); ctx.stroke();
+  }
+  // Axes labels (Y min/max)
+  ctx.fillStyle = '#9fb3c8'; ctx.font = '12px system-ui';
+  ctx.fillText((minY*100).toFixed(1)+'%', 4, m.t + h);
+  ctx.fillText((maxY*100).toFixed(1)+'%', 4, m.t + 10);
+  // Lines
+  series.forEach((s, idx) => {
+    ctx.strokeStyle = s.color || ['#60a5fa','#34d399','#fbbf24','#f87171'][idx % 4];
+    ctx.lineWidth = 2; ctx.beginPath();
+    s.values.forEach((v, i) => {
+      const x = xFor(i), y = yFor(v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+}
+
+// Data fetching from mfapi.in (public AMFI mirror)
+const MFAPI_BASE = 'https://api.mfapi.in';
+// Endpoints used:
+// - /mf -> list of schemes
+// - /mf/:code -> NAV time series
+
+const state = {
+  list: [], // {schemeCode, schemeName}
+  indexProxies: [
+    // some popular index fund codes for proxy benchmark (TRI not guaranteed)
+    { label: 'NIFTY 50 Index', schemeCode: '120828' }, // UTI Nifty 50 Index Direct (example)
+    { label: 'NIFTY Next 50', schemeCode: '120825' },
+    { label: 'NIFTY 500', schemeCode: '119808' }
+  ],
+  selected: null,
+  selectedSeries: null, // {date: '2024-01-01', nav: '123.45'}[]
+  benchmark: null,
+  timers: { list: null, fund: null },
+};
+
+async function fetchJSON(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Network error ' + res.status);
+  return res.json();
+}
+
+async function loadList() {
+  const data = await fetchJSON(MFAPI_BASE + '/mf');
+  state.list = data; // array
+}
+
+async function loadSeries(schemeCode) {
+  const data = await fetchJSON(MFAPI_BASE + '/mf/' + schemeCode);
+  // data.data is reverse chronological; normalize ascending date
+  let series = (data.data || []).map(r => ({ date: r.date, nav: Number(r.nav) }))
+    .filter(r => isFinite(r.nav))
+    .reverse();
+  return { meta: data.meta || {}, series };
+}
+
+// Basic parsing to infer plan/option/category from name
+function parseMetaFromName(name) {
+  const nm = name.toUpperCase();
+  const plan = nm.includes('DIRECT') ? 'Direct' : (nm.includes('REGULAR') ? 'Regular' : '');
+  const option = nm.includes('GROWTH') ? 'Growth' : (nm.includes('DIVIDEND') || nm.includes('IDCW') ? 'IDCWs' : '');
+  let category = '';
+  if (/(EQUITY|ELSS|SMALL CAP|MID CAP|LARGE CAP|MULTI CAP|FLEXI|SECTOR|THEMATIC)/.test(nm)) category = 'Equity';
+  else if (/(DEBT|LIQUID|MONEY MARKET|GILT|CORPORATE BOND|LOW DURATION|SHORT DURATION|DYNAMIC BOND)/.test(nm)) category = 'Debt';
+  else if (/(HYBRID|BALANCED|AGGRESSIVE HYBRID|CONSERVATIVE HYBRID|ARBITRAGE)/.test(nm)) category = 'Hybrid';
+  else category = 'Other';
+  // Infer subcategory heuristically
+  let sub = '';
+  const has = (s) => nm.includes(s);
+  if (category === 'Equity') {
+    if (has('ELSS')) sub = 'Equity Linked Savings Scheme (ELSS)';
+    else if (has('MULTI CAP')) sub = 'Multi Cap Funds';
+    else if (has('LARGE & MID') || (has('LARGE AND MID'))) sub = 'Large and mid cap';
+    else if (has('LARGE CAP')) sub = 'Large cap';
+    else if (has('MID CAP')) sub = 'Mid cap';
+    else if (has('SMALL CAP')) sub = 'Small cap';
+    else if (has('DIVIDEND YIELD')) sub = 'Dividend Yield Funds';
+    else if (has('VALUE')) sub = 'Value fund';
+    else if (has('CONTRA')) sub = 'Contra fund';
+    else if (has('SECTOR')) sub = 'Sectoral';
+    else if (has('THEMATIC')) sub = 'Thematic';
+  } else if (category === 'Debt') {
+    if (has('OVERNIGHT')) sub = 'Overnight fund';
+    else if (has('LIQUID')) sub = 'Liquid fund';
+    else if (has('ULTRA SHORT')) sub = 'Ultra short duration fund';
+    else if (has('LOW DURATION')) sub = 'Low duration funds';
+    else if (has('MONEY MARKET')) sub = 'Money market fund';
+    else if (has('SHORT DURATION')) sub = 'Short duration fund';
+    else if (has('MEDIUM DURATION')) sub = 'Medium duration fund';
+    else if (has('MEDIUM TO LONG')) sub = 'Medium to long duration fund';
+    else if (has('LONG DURATION')) sub = 'Long duration fund';
+    else if (has('DYNAMIC BOND')) sub = 'Dynamic bonds';
+    else if (has('CORPORATE BOND')) sub = 'Corporate bond';
+    else if (has('CREDIT RISK')) sub = 'Credit risk fund';
+    else if (has('BANKING') || has('PSU')) sub = 'Banking and psu fund';
+    else if (has('GILT') && has('10 YEAR')) sub = 'Glit fund-10 year';
+    else if (has('GILT')) sub = 'Glit fund';
+    else if (has('FLOATER')) sub = 'Floater fund';
+  } else if (category === 'Hybrid') {
+    if (has('CONSERVATIVE HYBRID')) sub = 'Conservative Hybrid Fund';
+    else if (has('BALANCED ADVANTAGE')) sub = 'Balance advantage fund';
+    else if (has('BALANCED') && !has('ADVANTAGE')) sub = 'Balance hybrid fund';
+    else if (has('AGGRESSIVE HYBRID')) sub = 'Aggressive hybrid fund';
+    else if (has('DYNAMIC ASSET ALLOCATION')) sub = 'Dynamic asset allocation';
+    else if (has('MULTI ASSET')) sub = 'Multi asset allocation fund';
+    else if (has('ARBITRAGE')) sub = 'Arbitrage fund';
+    else if (has('EQUITY SAVINGS') || has('EQUITY SAVING')) sub = 'Equity saving';
+  } else if (category === 'Other') {
+    if (has('INDEX')) sub = 'Index fund';
+    else if (has('FUND OF FUNDS') || has('FOF')) sub = 'FoF';
+    else if (has('RETIREMENT')) sub = 'Retired fund';
+    else if (has('CHILDREN') || has('CHILD')) sub = 'Childern fund';
+  }
+  return { plan, option, category, subcategory: sub };
+}
+
+// Analytics
+function toReturns(series) {
+  const rets = [];
+  for (let i = 1; i < series.length; i++) {
+    const prev = series[i-1].nav; const cur = series[i].nav;
+    if (prev > 0) rets.push(Math.log(cur / prev));
+  }
+  return rets; // daily log returns
+}
+
+function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function variance(arr) { const m = mean(arr); return arr.length ? mean(arr.map(x => (x - m) ** 2)) : 0; }
+function stdev(arr) { return Math.sqrt(variance(arr)); }
+function cov(a, b) { const mA = mean(a), mB = mean(b); const n = Math.min(a.length, b.length); if (!n) return 0; let s=0; for (let i=0;i<n;i++) s += (a[i]-mA)*(b[i]-mB); return s/n; }
+
+function annualizeDailyReturn(dailyMean, tradingDays = 252) { return (Math.exp(dailyMean * tradingDays) - 1); }
+function annualizeDailyVol(dailyStd, tradingDays = 252) { return dailyStd * Math.sqrt(tradingDays); }
+
+function computeMetrics(fundSeries, benchSeries) {
+  const fRets = toReturns(fundSeries);
+  const bRets = toReturns(benchSeries);
+  const n = Math.min(fRets.length, bRets.length);
+  const f = fRets.slice(-n);
+  const b = bRets.slice(-n);
+  const rfDaily = 0.00003; // ~0.75% annual RF proxy
+  const fExcess = f.map(x => x - rfDaily);
+  const bExcess = b.map(x => x - rfDaily);
+  const m = {
+    dailyMean: mean(f),
+    dailyStd: stdev(f),
+    benchDailyMean: mean(b),
+    benchDailyStd: stdev(b)
+  };
+  const beta = cov(f, b) / (variance(b) || 1e-9);
+  const alphaDaily = mean(fExcess) - beta * mean(bExcess);
+  return {
+    alpha: annualizeDailyReturn(alphaDaily),
+    beta,
+    sharpe: (mean(f) - rfDaily) / (stdev(f) || 1e-9) * Math.sqrt(252),
+    std: annualizeDailyVol(stdev(f)),
+  };
+}
+
+function computeSimpleRating(metrics) {
+  // Simple heuristic: Sharpe weighted, lower std, alpha positive
+  const s = clamp((metrics.sharpe + 1) / 3, 0, 1);
+  const v = clamp(1 - metrics.std, 0, 1);
+  const a = clamp((metrics.alpha + 0.02) / 0.1, 0, 1);
+  const score = 0.6*s + 0.2*v + 0.2*a;
+  const stars = Math.round(score * 5);
+  return stars + ' / 5';
+}
+
+function computeTax(category) {
+  if (category === 'Equity') {
+    return { type: 'Equity (≥65% equity)', stcg: '15% (≤ 1 year)', ltcg: '10% (> 1 year, beyond ₹1L gains)' };
+  }
+  if (category === 'Debt') {
+    return { type: 'Debt/Other', stcg: 'As per slab', ltcg: 'As per slab (indexation as per latest rules)' };
+  }
+  return { type: 'Hybrid/Other', stcg: 'Depends on equity level', ltcg: 'Depends on equity level' };
+}
+
+// UI updates
+function renderFundList(items) {
+  const listEl = qs('#fundList');
+  listEl.innerHTML = '';
+  items.slice(0, 500).forEach(item => {
+    const meta = parseMetaFromName(item.schemeName || '');
+    const el = document.createElement('div');
+    el.className = 'list-item';
+    el.innerHTML = `<div><div style="font-weight:700;">${item.schemeName}</div><div class="muted small">${meta.category}${meta.subcategory? ' · '+meta.subcategory:''} ${meta.plan? '· '+meta.plan:''} ${meta.option? '· '+meta.option:''}</div></div><div class="muted small">${item.schemeCode}</div>`;
+    el.addEventListener('click', () => selectFund(item));
+    listEl.appendChild(el);
+  });
+}
+
+function updateMetricsUI(meta, metrics, latestNAV, benchmarkLabel) {
+  qs('#mCategory').textContent = meta.category || '-';
+  qs('#mSubcategory').textContent = meta.subcategory || '-';
+  qs('#mAlpha').textContent = isFinite(metrics.alpha) ? fmtPct(metrics.alpha) : '-';
+  qs('#mBeta').textContent = isFinite(metrics.beta) ? fmtNum(metrics.beta, 2) : '-';
+  qs('#mSharpe').textContent = isFinite(metrics.sharpe) ? fmtNum(metrics.sharpe, 2) : '-';
+  qs('#mStd').textContent = isFinite(metrics.std) ? fmtPct(metrics.std) : '-';
+  qs('#mNAV').textContent = isFinite(latestNAV) ? fmtNum(latestNAV, 4) : '-';
+  qs('#mRating').textContent = computeSimpleRating(metrics);
+  qs('#mBenchmark').innerHTML = benchmarkLabel + ' <span class="muted small">(proxy)</span>';
+  const tax = computeTax(meta.category);
+  qs('#taxType').textContent = tax.type;
+  qs('#taxSTCG').textContent = tax.stcg;
+  qs('#taxLTCG').textContent = tax.ltcg;
+}
+
+function renderHoldingsPlaceholder(meta) {
+  const ul = qs('#holdings');
+  ul.innerHTML = '';
+  const items = [
+    'Top holdings unavailable via AMFI NAV API',
+    'Integrate AMC factsheets or PRIME/CMOTS for live holdings',
+    'Allocation requires factsheet feed; showing placeholders'
+  ];
+  items.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+  qs('#allocEquity').textContent = meta.category === 'Equity' ? '≥65% (typical)' : '-';
+  qs('#allocDebt').textContent = meta.category === 'Debt' ? '≥65% (typical)' : (meta.category === 'Hybrid' ? 'Variable' : '-');
+  qs('#allocCash').textContent = '~1-10% (typical)';
+}
+
+async function selectFund(item) {
+  try {
+    state.selected = item;
+    qs('#fundName').textContent = item.schemeName;
+    qs('#fundMeta').textContent = parseMetaFromName(item.schemeName).category;
+    qs('#fundISIN').textContent = 'Code ' + item.schemeCode;
+    // Load series
+    qs('#fundName').insertAdjacentHTML('beforeend', ' <span class="spinner"></span>');
+    const { meta, series } = await loadSeries(item.schemeCode);
+    state.selectedSeries = series;
+    const latest = series.length ? series[series.length-1].nav : NaN;
+    // Pick a benchmark proxy: choose first index proxy that has data
+    let bench = null; let benchLabel = 'NIFTY 50 TRI';
+    for (const proxy of state.indexProxies) {
+      try {
+        const b = await loadSeries(proxy.schemeCode);
+        if (b.series && b.series.length) { bench = b.series; benchLabel = proxy.label; break; }
+      } catch(e) { /* continue */ }
+    }
+    if (!bench) {
+      // Synthetic benchmark: 10% CAGR
+      const startNav = series[0]?.nav || 100;
+      bench = series.map((_, i) => ({ date: series[i].date, nav: startNav * Math.pow(1+0.10/252, i) }));
+      benchLabel = 'Synthetic 10% CAGR';
+    }
+    state.benchmark = bench;
+    // Align lengths
+    const n = Math.min(series.length, bench.length);
+    const f = series.slice(-n);
+    const b = bench.slice(-n);
+    // Normalize to 1.0
+    const baseF = f[0].nav; const baseB = b[0].nav;
+    const fIdx = f.map(r => r.nav / baseF);
+    const bIdx = b.map(r => r.nav / baseB);
+    const metrics = computeMetrics(f, b);
+    updateMetricsUI(parseMetaFromName(item.schemeName), metrics, latest, benchLabel);
+    renderLineChart(qs('#perfChart'), [
+      { name: 'Fund', values: fIdx.map(x => x - 1), color: '#60a5fa' },
+      { name: 'Benchmark', values: bIdx.map(x => x - 1), color: '#34d399' },
+    ]);
+    renderHoldingsPlaceholder(parseMetaFromName(item.schemeName));
+  } catch (e) {
+    alert('Failed to load fund data. Please try again. ' + e.message);
+  } finally {
+    const sp = qs('#fundName .spinner'); if (sp) sp.remove();
+  }
+}
+
+async function refreshSelectedFundSilently() {
+  if (!state.selected) return;
+  try {
+    const item = state.selected;
+    const { series } = await loadSeries(item.schemeCode);
+    state.selectedSeries = series;
+    const latest = series.length ? series[series.length-1].nav : NaN;
+    // Benchmark: reuse last successful or try fetch first proxy again if missing
+    let bench = state.benchmark;
+    let benchLabel = qs('#mBenchmark')?.textContent?.replace('(proxy)','').trim() || 'Benchmark';
+    if (!bench || !bench.length) {
+      for (const proxy of state.indexProxies) {
+        try {
+          const b = await loadSeries(proxy.schemeCode);
+          if (b.series && b.series.length) { bench = b.series; benchLabel = proxy.label; break; }
+        } catch(e) { /* continue */ }
+      }
+      if (!bench) {
+        const startNav = series[0]?.nav || 100;
+        bench = series.map((_, i) => ({ date: series[i].date, nav: startNav * Math.pow(1+0.10/252, i) }));
+        benchLabel = 'Synthetic 10% CAGR';
+      }
+      state.benchmark = bench;
+    }
+    const n = Math.min(series.length, bench.length);
+    const f = series.slice(-n);
+    const b = bench.slice(-n);
+    const baseF = f[0]?.nav || 1; const baseB = b[0]?.nav || 1;
+    const fIdx = f.map(r => r.nav / baseF);
+    const bIdx = b.map(r => r.nav / baseB);
+    const metrics = computeMetrics(f, b);
+    updateMetricsUI(parseMetaFromName(item.schemeName), metrics, latest, benchLabel);
+    renderLineChart(qs('#perfChart'), [
+      { name: 'Fund', values: fIdx.map(x => x - 1), color: '#60a5fa' },
+      { name: 'Benchmark', values: bIdx.map(x => x - 1), color: '#34d399' },
+    ]);
+  } catch(e) {
+    // silent
+  }
+}
+
+function applyFilters() {
+  const term = qs('#search').value.trim().toLowerCase();
+  const cat = qs('#category').value;
+  const subcat = qs('#subcategory').value;
+  const plan = qs('#plan').value;
+  const opt = qs('#option').value;
+  const filtered = state.list.filter(x => {
+    const name = (x.schemeName || '').toLowerCase();
+    if (term && !name.includes(term)) return false;
+    const meta = parseMetaFromName(x.schemeName || '');
+    if (cat && meta.category !== cat) return false;
+    if (subcat && meta.subcategory !== subcat) return false;
+    if (plan && meta.plan !== plan) return false;
+    if (opt && meta.option !== opt) return false;
+    return true;
+  });
+  renderFundList(filtered);
+}
+
+async function bootstrap() {
+  // Keyboard focus shortcut
+  window.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); qs('#search').focus(); }
+  });
+  // Wire controls
+  qs('#search').addEventListener('input', applyFilters);
+  qs('#category').addEventListener('change', applyFilters);
+  qs('#plan').addEventListener('change', applyFilters);
+  qs('#option').addEventListener('change', applyFilters);
+  qs('#subcategory').addEventListener('change', applyFilters);
+  qs('#refresh').addEventListener('click', async () => {
+    qs('#refresh').disabled = true; qs('#refresh').textContent = 'Refreshing...';
+    try { await loadList(); applyFilters(); } finally { qs('#refresh').disabled = false; qs('#refresh').textContent = 'Refresh'; }
+  });
+  // Initial
+  qs('#fundList').innerHTML = '<div class="muted">Loading funds…</div>';
+  try {
+    await loadList();
+    applyFilters();
+    updateLastUpdated();
+    startPolling();
+  } catch (e) {
+    qs('#fundList').innerHTML = '<div class="danger">Failed to load list from mfapi.in</div>';
+  }
+}
+
+bootstrap();
+
+// Auto-refresh polling and last-updated indicator
+const POLL_MS_LIST = 15 * 60 * 1000; // 15 minutes
+const POLL_MS_FUND = 5 * 60 * 1000;  // 5 minutes
+
+function updateLastUpdated() {
+  const ts = new Date();
+  qs('#lastUpdated').textContent = 'Last updated: ' + ts.toLocaleString('en-IN');
+}
+
+async function refreshAll() {
+  try {
+    await loadList();
+    applyFilters();
+  } catch(e) { /* ignore list refresh errors */ }
+  await refreshSelectedFundSilently();
+  updateLastUpdated();
+}
+
+function startPolling() {
+  stopPolling();
+  // pause when tab hidden
+  const visibilityHandler = () => {
+    if (document.hidden) { stopPolling(); }
+    else { refreshAll(); scheduleTimers(); }
+  };
+  document.removeEventListener('visibilitychange', visibilityHandler);
+  document.addEventListener('visibilitychange', visibilityHandler);
+  scheduleTimers();
+}
+
+function scheduleTimers() {
+  state.timers.list = setInterval(async () => {
+    if (document.hidden) return; await loadList().then(applyFilters).catch(()=>{}); updateLastUpdated();
+  }, POLL_MS_LIST);
+  state.timers.fund = setInterval(async () => {
+    if (document.hidden) return; await refreshSelectedFundSilently(); updateLastUpdated();
+  }, POLL_MS_FUND);
+}
+
+function stopPolling() {
+  if (state.timers.list) { clearInterval(state.timers.list); state.timers.list = null; }
+  if (state.timers.fund) { clearInterval(state.timers.fund); state.timers.fund = null; }
+}
+</script>
+</body>
+</html>
+
+
