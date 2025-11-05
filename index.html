@@ -1,8 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mutual Fund Screener - Single File</title>
 <style>
 /* Minimal reset */
@@ -50,14 +48,81 @@ canvas { width:100%; height:280px; background:#0b1220; border:1px solid #1f2937;
 ul.plain { list-style:none; padding-left:0; margin:0; }
 ul.plain li { padding:6px 0; border-bottom:1px dashed #1f2937; }
 ul.plain li:last-child { border-bottom:0; }
+
+/* Advanced Filters Styles */
+.advanced-filters { background:#0f1720; border:1px solid #1f2937; border-radius:12px; padding:20px; margin-top:12px; }
+.filters-container { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:24px; }
+.filter-section h4 { margin:0 0 12px 0; color:#9fb3c8; font-size:14px; font-weight:600; text-transform:uppercase; }
+.filter-group { display:flex; flex-direction:column; gap:8px; }
+.filter-group label { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; }
+.filter-group input[type="checkbox"] { width:16px; height:16px; accent-color:#1d4ed8; }
+.range-filter { display:flex; flex-direction:column; gap:12px; }
+.range-inputs { display:flex; align-items:center; gap:8px; }
+.range-inputs input[type="number"] { width:100px; padding:6px 8px; font-size:12px; }
+.range-inputs span { color:#9fb3c8; font-size:12px; }
+.range-slider { display:flex; gap:8px; align-items:center; }
+.range-slider input[type="range"] { flex:1; height:4px; background:#1f2937; border-radius:2px; outline:none; -webkit-appearance:none; }
+.range-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:#1d4ed8; border-radius:50%; cursor:pointer; }
+.filter-actions { display:flex; gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid #1f2937; }
+
+/* Calculator Styles */
+#calculatorSection { position:fixed; top:0; left:0; right:0; bottom:0; background:#0b0f14; z-index:1000; overflow-y:auto; }
+.calculator-container { max-width:800px; margin:40px auto; padding:24px; background:#0f1720; border:1px solid #1f2937; border-radius:16px; }
+.calculator-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+.calculator-header h2 { margin:0; color:#e6edf3; }
+.close-btn { background:none; border:none; color:#9fb3c8; font-size:24px; cursor:pointer; padding:4px 8px; }
+.close-btn:hover { color:#e6edf3; }
+.calculator-tabs { display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid #1f2937; }
+.tab-btn { background:none; border:none; color:#9fb3c8; padding:12px 16px; cursor:pointer; border-bottom:2px solid transparent; }
+.tab-btn.active { color:#1d4ed8; border-bottom-color:#1d4ed8; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+.calculator-inputs { display:grid; gap:20px; margin-bottom:32px; }
+.input-group { display:grid; gap:8px; }
+.input-group label { font-weight:600; color:#9fb3c8; font-size:14px; }
+.input-group input[type="range"] { width:100%; height:6px; background:#1f2937; border-radius:3px; outline:none; -webkit-appearance:none; }
+.input-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; background:#1d4ed8; border-radius:50%; cursor:pointer; }
+.input-group input[type="number"] { width:100%; padding:8px 12px; border:1px solid #2a3340; border-radius:6px; background:#0b1220; color:#e6edf3; font-size:14px; }
+.calculator-results { background:#0b1220; border:1px solid #1f2937; border-radius:8px; padding:20px; }
+.result-item { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #1f2937; }
+.result-item:last-child { border-bottom:none; }
+.result-item.total { font-weight:700; font-size:18px; color:#22c55e; }
+
+/* Comparison Modal Styles */
+.modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:2000; display:flex; align-items:center; justify-content:center; }
+.modal-content { background:#0f1720; border:1px solid #1f2937; border-radius:12px; max-width:90%; max-height:90%; overflow:auto; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #1f2937; }
+.modal-header h2 { margin:0; }
+.comparison-content { padding:20px; }
+.comparison-table { width:100%; border-collapse:collapse; }
+.comparison-table th, .comparison-table td { padding:12px; text-align:left; border-bottom:1px solid #1f2937; }
+.comparison-table th { background:#0b1220; font-weight:600; color:#9fb3c8; }
+.comparison-table tr:hover { background:#0b1220; }
+
+/* Fund Selection Checkbox */
+.fund-checkbox { margin-right:8px; accent-color:#1d4ed8; }
+
+/* Utility Classes */
+.hidden { display:none !important; }
+.text-center { text-align:center; }
+.mb-4 { margin-bottom:16px; }
+.mt-4 { margin-top:16px; }
+
+/* Enhanced List Items with Selection */
+.list-item { position:relative; }
+.list-item.selected { border-color:#1d4ed8; background:#0b1220; }
+.list-item:hover .fund-checkbox { opacity:1; }
+.fund-checkbox { opacity:0; transition:opacity 0.2s; }
+.list-item:hover .fund-checkbox, .list-item.selected .fund-checkbox { opacity:1; }
 </style>
 </head>
 <body>
   <div class="container">
+    <!-- Enhanced Header with Amazon-style Filters -->
     <div class="header">
-      <div class="title">Mutual Fund Screener</div>
+      <div class="title">Mutual Fund Screener &amp; Calculator</div>
       <div class="controls">
-        <input id="search" type="text" placeholder="Search fund or AMC (e.g. Nippon, Flexi)" />
+        <input id="search" type="text" placeholder="Search fund or AMC (e.g. Nippon, Flexi)">
         <select id="category">
           <option value="">All Categories</option>
           <option>Equity</option>
@@ -129,8 +194,195 @@ ul.plain li:last-child { border-bottom:0; }
             <option>FoF</option>
           </optgroup>
         </select>
+        <button id="advancedFiltersBtn" class="secondary">Advanced Filters</button>
+        <button id="calculatorBtn" class="secondary">Calculator</button>
+        <button id="compareBtn" class="secondary" disabled="">Compare (0)</button>
         <button id="refresh">Refresh</button>
-        <span id="lastUpdated" class="muted small" style="margin-left:4px;">Last updated: —</span>
+        <span id="lastUpdated" class="muted small" style="margin-left:4px;">Last updated: 6/11/2025, 1:59:33 am</span>
+      </div>
+    </div>
+
+    <!-- Advanced Filters Panel (Amazon-style) -->
+    <div id="advancedFiltersPanel" class="advanced-filters">
+      <div class="filters-container">
+        <div class="filter-section">
+          <h4>Risk Level</h4>
+          <div class="filter-group">
+            <label><input type="checkbox" value="low" data-filter="risk"> Low Risk</label>
+            <label><input type="checkbox" value="moderate" data-filter="risk"> Moderate Risk</label>
+            <label><input type="checkbox" value="high" data-filter="risk"> High Risk</label>
+          </div>
+        </div>
+        
+        <div class="filter-section">
+          <h4>Returns Range (%)</h4>
+          <div class="range-filter">
+            <div class="range-inputs">
+              <input type="number" id="minReturn" placeholder="Min 1Y return" min="-50" max="100" step="0.1">
+              <span>to</span>
+              <input type="number" id="maxReturn" placeholder="Max 1Y return" min="-50" max="100" step="0.1">
+            </div>
+            <div class="range-slider">
+              <input type="range" id="returnRangeMin" min="-50" max="100" value="-50" step="0.1">
+              <input type="range" id="returnRangeMax" min="-50" max="100" value="100" step="0.1">
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <h4>Asset Under Management (₹ Crores)</h4>
+          <div class="range-filter">
+            <div class="range-inputs">
+              <input type="number" id="minAUM" placeholder="Min AUM" min="0" max="100000" step="1">
+              <span>to</span>
+              <input type="number" id="maxAUM" placeholder="Max AUM" min="0" max="100000" step="1">
+            </div>
+            <div class="range-slider">
+              <input type="range" id="aumRangeMin" min="0" max="100000" value="0" step="100">
+              <input type="range" id="aumRangeMax" min="0" max="100000" value="100000" step="100">
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <h4>Expense Ratio (%)</h4>
+          <div class="range-filter">
+            <div class="range-inputs">
+              <input type="number" id="minExpense" placeholder="Min expense" min="0" max="5" step="0.01">
+              <span>to</span>
+              <input type="number" id="maxExpense" placeholder="Max expense" min="0" max="5" step="0.01">
+            </div>
+            <div class="range-slider">
+              <input type="range" id="expenseRangeMin" min="0" max="5" value="0" step="0.01">
+              <input type="range" id="expenseRangeMax" min="0" max="5" value="5" step="0.01">
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <h4>Fund House</h4>
+          <div class="filter-group">
+            <label><input type="checkbox" value="sbi" data-filter="fundHouse"> SBI Mutual Fund</label>
+            <label><input type="checkbox" value="hdfc" data-filter="fundHouse"> HDFC Mutual Fund</label>
+            <label><input type="checkbox" value="icici" data-filter="fundHouse"> ICICI Prudential</label>
+            <label><input type="checkbox" value="axis" data-filter="fundHouse"> Axis Mutual Fund</label>
+            <label><input type="checkbox" value="kotak" data-filter="fundHouse"> Kotak Mutual Fund</label>
+            <label><input type="checkbox" value="nipp" data-filter="fundHouse"> Nippon India</label>
+            <label><input type="checkbox" value="uti" data-filter="fundHouse"> UTI Mutual Fund</label>
+            <label><input type="checkbox" value="franklin" data-filter="fundHouse"> Franklin Templeton</label>
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button id="applyAdvancedFilters" class="secondary">Apply Filters</button>
+          <button id="clearAdvancedFilters" class="secondary">Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Investment Calculator Section -->
+    <div id="calculatorSection" class="hidden">
+      <div class="calculator-container">
+        <div class="calculator-header">
+          <h2>Investment Calculator</h2>
+          <button id="closeCalculator" class="close-btn">×</button>
+        </div>
+        
+        <div class="calculator-tabs">
+          <button class="tab-btn active" data-tab="sip">SIP Calculator</button>
+          <button class="tab-btn" data-tab="lumpsum">Lump Sum Calculator</button>
+        </div>
+
+        <div class="calculator-content">
+          <!-- SIP Calculator -->
+          <div id="sipCalculator" class="tab-content active">
+            <div class="calculator-inputs">
+              <div class="input-group">
+                <label>Monthly Investment Amount (₹)</label>
+                <input type="range" id="sipAmount" min="500" max="100000" value="5000" step="500">
+                <input type="number" id="sipAmountInput" value="5000" min="500" max="100000" step="500">
+              </div>
+              
+              <div class="input-group">
+                <label>Expected Return Rate (%)</label>
+                <input type="range" id="sipReturn" min="1" max="30" value="12" step="0.5">
+                <input type="number" id="sipReturnInput" value="12" min="1" max="30" step="0.5">
+              </div>
+              
+              <div class="input-group">
+                <label>Investment Period (Years)</label>
+                <input type="range" id="sipPeriod" min="1" max="30" value="10" step="1">
+                <input type="number" id="sipPeriodInput" value="10" min="1" max="30" step="1">
+              </div>
+            </div>
+            
+            <div class="calculator-results">
+              <div class="result-item">
+                <span>Invested Amount:</span>
+                <span id="sipInvested">₹6,00,000</span>
+              </div>
+              <div class="result-item">
+                <span>Estimated Returns:</span>
+                <span id="sipReturns">₹5,92,874</span>
+              </div>
+              <div class="result-item total">
+                <span>Total Value:</span>
+                <span id="sipTotal">₹11,92,874</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lump Sum Calculator -->
+          <div id="lumpsumCalculator" class="tab-content">
+            <div class="calculator-inputs">
+              <div class="input-group">
+                <label>Lump Sum Investment (₹)</label>
+                <input type="range" id="lumpsumAmount" min="1000" max="10000000" value="100000" step="1000">
+                <input type="number" id="lumpsumAmountInput" value="100000" min="1000" max="10000000" step="1000">
+              </div>
+              
+              <div class="input-group">
+                <label>Expected Return Rate (%)</label>
+                <input type="range" id="lumpsumReturn" min="1" max="30" value="12" step="0.5">
+                <input type="number" id="lumpsumReturnInput" value="12" min="1" max="30" step="0.5">
+              </div>
+              
+              <div class="input-group">
+                <label>Investment Period (Years)</label>
+                <input type="range" id="lumpsumPeriod" min="1" max="30" value="5" step="1">
+                <input type="number" id="lumpsumPeriodInput" value="5" min="1" max="30" step="1">
+              </div>
+            </div>
+            
+            <div class="calculator-results">
+              <div class="result-item">
+                <span>Invested Amount:</span>
+                <span id="lumpsumInvested">₹1,00,000</span>
+              </div>
+              <div class="result-item">
+                <span>Estimated Returns:</span>
+                <span id="lumpsumReturns">₹76,234</span>
+              </div>
+              <div class="result-item total">
+                <span>Total Value:</span>
+                <span id="lumpsumTotal">₹1,76,234</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fund Comparison Modal -->
+    <div id="comparisonModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Fund Comparison</h2>
+          <button id="closeComparison" class="close-btn">×</button>
+        </div>
+        <div id="comparisonContent" class="comparison-content">
+          <!-- Comparison table will be populated here -->
+        </div>
       </div>
     </div>
 
@@ -138,47 +390,47 @@ ul.plain li:last-child { border-bottom:0; }
       <div class="card col-4">
         <div class="section-title">Funds</div>
         <div class="hint">Click a fund to view details. Type to filter. <span class="kbd">⌘/Ctrl + K</span> to focus search.</div>
-        <div id="fundList" class="list" style="margin-top:10px; max-height:70vh; overflow:auto;"></div>
+        <div id="fundList" class="list" style="margin-top:10px; max-height:70vh; overflow:auto;"><div class="list-item"><div><div style="font-weight:700;">quant Small Cap Fund - IDCW Option - Regular Plan</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">100176</div></div><div class="list-item"><div><div style="font-weight:700;">quant Small Cap Fund - Growth - Regular Plan</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">100177</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Small Cap Fund Regular Plan - Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">100794</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Small Cap Fund Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">100795</div></div><div class="list-item"><div><div style="font-weight:700;">Kotak-Small Cap Fund - Payout of Income Distribution cum capital withdrawal option</div><div class="muted small">Equity · Small cap  </div></div><div class="muted small">102874</div></div><div class="list-item"><div><div style="font-weight:700;">Kotak-Small Cap Fund - Growth</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">102875</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Equity Fund - Growth</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">103006</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Equity Fund - IDCW</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">103007</div></div><div class="list-item"><div><div style="font-weight:700;">Franklin India Small Cap Fund-Growth</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">103360</div></div><div class="list-item"><div><div style="font-weight:700;">Franklin India Small Cap Fund - IDCW</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">103361</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Dividend</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">104998</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap- Growth</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">104999</div></div><div class="list-item"><div><div style="font-weight:700;">Aditya Birla Sun Life Small Cap Fund - GROWTH</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">105804</div></div><div class="list-item"><div><div style="font-weight:700;">Aditya Birla Sun Life Small Cap Fund -Regular - IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">105805</div></div><div class="list-item"><div><div style="font-weight:700;">DSP Small Cap Fund - Regular - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">105989</div></div><div class="list-item"><div><div style="font-weight:700;">JPMorgan India Mid and Small Cap Fund - Regular Plan - Growth Option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">107301</div></div><div class="list-item"><div><div style="font-weight:700;">JPMorgan India Mid and Small Cap Fund - Regular Plan - Dividend Option</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">107302</div></div><div class="list-item"><div><div style="font-weight:700;">DBS Chola Small Cap Fund -Dividend Option</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">107403</div></div><div class="list-item"><div><div style="font-weight:700;">DBS Chola Small Cap Fund-Cumulative Option</div><div class="muted small">Equity · Small cap  </div></div><div class="muted small">107404</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Fund - Dividend</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">108096</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Fund - Growth</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">108097</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Small Cap Fund Institutional Plan - Growth</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">112064</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Small Cap Fund Institutional Plan - Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">112207</div></div><div class="list-item"><div><div style="font-weight:700;">L&amp;T Small Cap Fund -Dividend Option</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">112606</div></div><div class="list-item"><div><div style="font-weight:700;">L&amp;T Small Cap Fund-Cumulative Option</div><div class="muted small">Equity · Small cap  </div></div><div class="muted small">112607</div></div><div class="list-item"><div><div style="font-weight:700;">DSP Small Cap Fund - Regular - IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">113153</div></div><div class="list-item"><div><div style="font-weight:700;">Nippon India Small Cap Fund - Growth Plan - Growth Option</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">113177</div></div><div class="list-item"><div><div style="font-weight:700;">Nippon India Small Cap Fund - Growth Plan - Bonus Option</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">113178</div></div><div class="list-item"><div><div style="font-weight:700;">NIPPON INDIA SMALL CAP FUND - IDCW Option</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">113179</div></div><div class="list-item"><div><div style="font-weight:700;">Franklin India Small Cap Fund - Direct - IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">118524</div></div><div class="list-item"><div><div style="font-weight:700;">Franklin India Small Cap Fund - Direct - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">118525</div></div><div class="list-item"><div><div style="font-weight:700;">NIPPON INDIA SMALL CAP FUND - Direct Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">118775</div></div><div class="list-item"><div><div style="font-weight:700;">Nippon India Small Cap Fund - Direct Plan Growth Plan - Bonus Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">118777</div></div><div class="list-item"><div><div style="font-weight:700;">Nippon India Small Cap Fund - Direct Plan Growth Plan - Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">118778</div></div><div class="list-item"><div><div style="font-weight:700;">DSP Small Cap Fund - Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">119212</div></div><div class="list-item"><div><div style="font-weight:700;">DSP Small Cap Fund - Direct Plan - IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">119213</div></div><div class="list-item"><div><div style="font-weight:700;">Aditya Birla Sun Life Small Cap Fund - Growth - Direct Plan</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">119556</div></div><div class="list-item"><div><div style="font-weight:700;">Aditya Birla Sun Life Small Cap Fund -Direct - IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">119557</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Small Cap Fund Direct Plan - Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">119588</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Small Cap Fund Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">119589</div></div><div class="list-item"><div><div style="font-weight:700;">JPMorgan India Mid and Small Cap Fund - Direct Plan - Dividend Option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">119868</div></div><div class="list-item"><div><div style="font-weight:700;">JPMorgan India Mid and Small Cap Fund - Direct Plan - Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">119869</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Equity Fund - IDCW Direct Plan</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">120068</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Equity Fund - Growth Direct</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">120069</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC - Small Cap Fund - Dividend Direct</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">120076</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC - Small Cap Fund - Growth Direct</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">120077</div></div><div class="list-item"><div><div style="font-weight:700;">Kotak-Small Cap Fund - Payout of Income Distribution cum capital withdrawal option - Direct</div><div class="muted small">Equity · Small cap · Direct </div></div><div class="muted small">120163</div></div><div class="list-item"><div><div style="font-weight:700;">Kotak-Small Cap Fund - Growth - Direct</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">120164</div></div><div class="list-item"><div><div style="font-weight:700;">quant Small Cap Fund - IDCW Option - Direct Plan</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">120827</div></div><div class="list-item"><div><div style="font-weight:700;">quant Small Cap Fund - Growth Option - Direct Plan</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">120828</div></div><div class="list-item"><div><div style="font-weight:700;">Axis Small Cap Fund - Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">125350</div></div><div class="list-item"><div><div style="font-weight:700;">Axis Small Cap Fund - Direct Plan - IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">125351</div></div><div class="list-item"><div><div style="font-weight:700;">Axis Small Cap Fund - Regular Plan - IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">125352</div></div><div class="list-item"><div><div style="font-weight:700;">Axis Small Cap Fund - Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">125354</div></div><div class="list-item"><div><div style="font-weight:700;">SBI Small Cap Fund - Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">125494</div></div><div class="list-item"><div><div style="font-weight:700;">SBI Small Cap Fund - Regular Plan - Income Distribution cum Capital Withdrawal Option (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">125495</div></div><div class="list-item"><div><div style="font-weight:700;">SBI Small Cap Fund - Direct Plan - Income Distribution cum Capital Withdrawal Option (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">125496</div></div><div class="list-item"><div><div style="font-weight:700;">SBI Small Cap Fund - Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">125497</div></div><div class="list-item"><div><div style="font-weight:700;">Union Small Cap Fund - Direct Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">129646</div></div><div class="list-item"><div><div style="font-weight:700;">Union Small Cap Fund - Regular Plan - Growth Option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">129647</div></div><div class="list-item"><div><div style="font-weight:700;">Union Small Cap Fund - Regular Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">129648</div></div><div class="list-item"><div><div style="font-weight:700;">Union Small Cap Fund - Direct Plan - Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">129649</div></div><div class="list-item"><div><div style="font-weight:700;">HDFC Small Cap Fund - IDCW Option</div><div class="muted small">Equity · Small cap  · IDCWs</div></div><div class="muted small">130501</div></div><div class="list-item"><div><div style="font-weight:700;">HDFC Small Cap Fund - Growth Option</div><div class="muted small">Equity · Small cap  · Growth</div></div><div class="muted small">130502</div></div><div class="list-item"><div><div style="font-weight:700;">HDFC Small Cap Fund - Growth Option - Direct Plan</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">130503</div></div><div class="list-item"><div><div style="font-weight:700;">HDFC Small Cap Fund - IDCW Option - Direct Plan</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">130504</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series II Regular Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">132983</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series II Regular Dividend Payout</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">132984</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series II Direct Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">132985</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series II Direct Dividend Payout</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">132986</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series III Regular Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">134295</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series III Regular Dividend</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">134296</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series III Direct Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">134297</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series III Direct Dividend</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">134298</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series IV - Regular Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">134371</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series IV - Regular Dividend Payout</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">134372</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series IV - Direct Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">134373</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series IV - Direct Dividend Payout</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">134374</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA MID &amp; SMALL CAP EQUITY &amp; DEBT FUND - DIRECT PLAN GROWTH</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">139527</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA MID &amp; SMALL CAP EQUITY &amp; DEBT FUND - REGULAR  PLAN IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">139528</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA MID &amp; SMALL CAP EQUITY &amp; DEBT FUND - REGULAR  PLAN  GROWTH</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">139529</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA MID &amp; SMALL CAP EQUITY &amp; DEBT FUND - DIRECT PLAN IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">139530</div></div><div class="list-item"><div><div style="font-weight:700;">IDBI Small Cap Fund Growth Regular</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">141462</div></div><div class="list-item"><div><div style="font-weight:700;">IDBI Small Cap Fund - Growth Direct</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">141475</div></div><div class="list-item"><div><div style="font-weight:700;">IDBI Small Cap Fund IDCW Direct</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">141476</div></div><div class="list-item"><div><div style="font-weight:700;">IDBI Small Cap Fund - IDCW Regular</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">141477</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series V Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">141498</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series V Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">141499</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series V Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">141500</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series V Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">141501</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series VI Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">141560</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series VI Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">141561</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series VI Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">141562</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Select Small Cap Series VI Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">141563</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series I Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">142531</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series I Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">142532</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series I Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">142533</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series I Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">142534</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series II Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">143007</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series II Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">143008</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series II Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">143009</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series II Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">143010</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series III Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">143223</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series III Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">143224</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series III Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">143225</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series III Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">143226</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series IV Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">143503</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series IV Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">143504</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series IV Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">143505</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series IV Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">143506</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series V Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">144435</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series V Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">144436</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series V Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">144437</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series V Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">144438</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series VI Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">144726</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series VI Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">144727</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series VI Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">144728</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series VI Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">144729</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series VII Regular Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">144986</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series VII Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">144987</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap VII Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">144988</div></div><div class="list-item"><div><div style="font-weight:700;">Sundaram Emerging Small Cap Series VII Direct Plan - Payout of Income Distribution cum Capital Withdrawal (IDCW)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">144989</div></div><div class="list-item"><div><div style="font-weight:700;">Tata Small Cap Fund-Direct Plan-Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">145206</div></div><div class="list-item"><div><div style="font-weight:700;">Tata Small Cap Fund-Regular Plan-Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">145208</div></div><div class="list-item"><div><div style="font-weight:700;">TATA Small Cap Fund Direct Plan - Reinvestment of Income Distribution cum capital withdrawal option </div><div class="muted small">Equity · Small cap · Direct </div></div><div class="muted small">145209</div></div><div class="list-item"><div><div style="font-weight:700;">TATA Small Cap Fund Regular Plan - Reinvestment of Income Distribution cum capital withdrawal option </div><div class="muted small">Equity · Small cap · Regular </div></div><div class="muted small">145210</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA Small Cap Fund Direct Plan IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">145675</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA Small Cap Fund Regular Plan IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">145676</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA Small Cap Fund Regular Plan Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">145677</div></div><div class="list-item"><div><div style="font-weight:700;">BANK OF INDIA Small Cap Fund Direct Plan Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">145678</div></div><div class="list-item"><div><div style="font-weight:700;">CANARA ROBECO SMALL CAP FUND - REGULAR PLAN - GROWTH OPTION</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">146127</div></div><div class="list-item"><div><div style="font-weight:700;">CANARA ROBECO SMALL CAP FUND - REGULAR PLAN - IDCW (Payout/Reinvestment)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">146128</div></div><div class="list-item"><div><div style="font-weight:700;">CANARA ROBECO SMALL CAP FUND - DIRECT PLAN - GROWTH OPTION</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">146130</div></div><div class="list-item"><div><div style="font-weight:700;">CANARA ROBECO SMALL CAP FUND - DIRECT PLAN - IDCW (Payout/Reinvestment)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">146131</div></div><div class="list-item"><div><div style="font-weight:700;">Edelweiss Small Cap Fund - Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">146193</div></div><div class="list-item"><div><div style="font-weight:700;">Edelweiss Small Cap Fund - Regular Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">146194</div></div><div class="list-item"><div><div style="font-weight:700;">Edelweiss Small Cap Fund - Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">146196</div></div><div class="list-item"><div><div style="font-weight:700;">Edelweiss Small Cap Fund - Direct Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">146197</div></div><div class="list-item"><div><div style="font-weight:700;">Principal Small Cap Fund - Regular Plan - Growth Option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">147129</div></div><div class="list-item"><div><div style="font-weight:700;">Principal Small Cap Fund - Regular Plan - Income Distribution CUM Capital Withdrawal Option</div><div class="muted small">Equity · Small cap · Regular </div></div><div class="muted small">147130</div></div><div class="list-item"><div><div style="font-weight:700;">Principal Small Cap Fund - Direct Plan - Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">147131</div></div><div class="list-item"><div><div style="font-weight:700;">Principal Small Cap Fund - Direct Plan- Income Distribution CUM Capital Withdrawal Option</div><div class="muted small">Equity · Small cap · Direct </div></div><div class="muted small">147132</div></div><div class="list-item"><div><div style="font-weight:700;">ITI Small Cap Fund - Direct Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">147917</div></div><div class="list-item"><div><div style="font-weight:700;">ITI Small Cap Fund - Regular Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">147918</div></div><div class="list-item"><div><div style="font-weight:700;">ITI Small Cap Fund - Direct Plan - Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">147919</div></div><div class="list-item"><div><div style="font-weight:700;">ITI Small Cap Fund - Regular Plan - Growth Option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">147920</div></div><div class="list-item"><div><div style="font-weight:700;">BANDHAN SMALL CAP FUND - DIRECT PLAN IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">147943</div></div><div class="list-item"><div><div style="font-weight:700;">BANDHAN SMALL CAP FUND - REGULAR PLAN GROWTH</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">147944</div></div><div class="list-item"><div><div style="font-weight:700;">BANDHAN SMALL CAP FUND - REGULAR PLAN IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">147945</div></div><div class="list-item"><div><div style="font-weight:700;">BANDHAN SMALL CAP FUND - DIRECT PLAN GROWTH</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">147946</div></div><div class="list-item"><div><div style="font-weight:700;">UTI Small Cap Fund - Regular Plan - IDCW (Payout)</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">148616</div></div><div class="list-item"><div><div style="font-weight:700;">UTI Small Cap Fund - Regular Plan - Growth Option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">148617</div></div><div class="list-item"><div><div style="font-weight:700;">UTI Small Cap Fund - Direct Plan - Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">148618</div></div><div class="list-item"><div><div style="font-weight:700;">UTI Small Cap Fund - Direct Plan - IDCW (Payout)</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">148619</div></div><div class="list-item"><div><div style="font-weight:700;">PGIM India Small Cap Fund - Direct Plan- Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">149019</div></div><div class="list-item"><div><div style="font-weight:700;">PGIM India Small Cap Fund - Regular Plan - Growth Option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">149020</div></div><div class="list-item"><div><div style="font-weight:700;">PGIM India Small Cap Fund - Direct Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">149031</div></div><div class="list-item"><div><div style="font-weight:700;">PGIM India Small Cap Fund - Regular Plan - IDCW Option</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">149032</div></div><div class="list-item"><div><div style="font-weight:700;">Mahindra Manulife Small Cap Fund - Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">150912</div></div><div class="list-item"><div><div style="font-weight:700;">Mahindra Manulife Small Cap Fund - Direct Plan - IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">150913</div></div><div class="list-item"><div><div style="font-weight:700;">Mahindra Manulife Small Cap Fund - Regular Plan - IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">150914</div></div><div class="list-item"><div><div style="font-weight:700;">Mahindra Manulife Small Cap Fund - Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">150915</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Fund - Direct Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">151130</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Fund - Regular IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">151131</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Fund - Direct IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">151132</div></div><div class="list-item"><div><div style="font-weight:700;">HSBC Small Cap Fund - Regular Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">151133</div></div><div class="list-item"><div><div style="font-weight:700;">LIC MF Small Cap Fund-Regular Plan-Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">152003</div></div><div class="list-item"><div><div style="font-weight:700;">LIC MF Small Cap Fund-Direct Plan-Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">152004</div></div><div class="list-item"><div><div style="font-weight:700;">LIC MF Small Cap Fund-Direct Plan-IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">152005</div></div><div class="list-item"><div><div style="font-weight:700;">LIC MF Small Cap Fund-Regular Plan-IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">152006</div></div><div class="list-item"><div><div style="font-weight:700;">QUANTUM SMALL CAP FUND - DIRECT PLAN GROWTH OPTION</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">152107</div></div><div class="list-item"><div><div style="font-weight:700;">QUANTUM SMALL CAP FUND - REGULAR PLAN GROWTH OPTION</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">152108</div></div><div class="list-item"><div><div style="font-weight:700;">Baroda BNP Paribas Small Cap Fund - Direct Plan - Growth option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">152128</div></div><div class="list-item"><div><div style="font-weight:700;">Baroda BNP Paribas Small Cap Fund - Direct Plan - IDCW option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">152129</div></div><div class="list-item"><div><div style="font-weight:700;">Baroda BNP Paribas Small Cap Fund - Regular Plan - Growth option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">152130</div></div><div class="list-item"><div><div style="font-weight:700;">Baroda BNP Paribas Small Cap Fund - Regular Plan - IDCW option</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">152131</div></div><div class="list-item"><div><div style="font-weight:700;">Motilal Oswal Small Cap Fund - Regular - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">152232</div></div><div class="list-item"><div><div style="font-weight:700;">Motilal Oswal Small Cap Fund - Regular - IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">152234</div></div><div class="list-item"><div><div style="font-weight:700;">Motilal Oswal Small Cap Fund - Direct IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">152235</div></div><div class="list-item"><div><div style="font-weight:700;">Motilal Oswal Small Cap Fund - Direct - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">152237</div></div><div class="list-item"><div><div style="font-weight:700;">JM Small Cap Fund (Regular) - Growth Option</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">152612</div></div><div class="list-item"><div><div style="font-weight:700;">JM Small Cap Fund (Regular) - IDCW Option</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">152613</div></div><div class="list-item"><div><div style="font-weight:700;">JM Small Cap Fund (Direct) - Growth Option</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">152614</div></div><div class="list-item"><div><div style="font-weight:700;">JM Small Cap Fund (Direct) - IDCW Option</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">152615</div></div><div class="list-item"><div><div style="font-weight:700;">TRUSTMF SMALL CAP FUND -DIRECT PLAN-IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">152937</div></div><div class="list-item"><div><div style="font-weight:700;">TRUSTMF SMALL CAP FUND -REGULAR PLAN- IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">152938</div></div><div class="list-item"><div><div style="font-weight:700;">TRUSTMF SMALL CAP FUND -DIRECT PLAN-GROWTH</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">152939</div></div><div class="list-item"><div><div style="font-weight:700;">TRUSTMF SMALL CAP FUND -REGULAR PLAN-GROWTH</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">152940</div></div><div class="list-item"><div><div style="font-weight:700;">Mirae Asset Small Cap Fund - Direct Plan - Growth</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">153196</div></div><div class="list-item"><div><div style="font-weight:700;">Mirae Asset Small Cap Fund - Direct Plan - IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">153197</div></div><div class="list-item"><div><div style="font-weight:700;">Mirae Asset Small Cap Fund - Regular Plan - Growth</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">153198</div></div><div class="list-item"><div><div style="font-weight:700;">Mirae Asset Small Cap Fund - Regular Plan - IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">153199</div></div><div class="list-item"><div><div style="font-weight:700;">BAJAJ FINSERV SMALL CAP FUND - REGULAR - GROWTH</div><div class="muted small">Equity · Small cap · Regular · Growth</div></div><div class="muted small">153609</div></div><div class="list-item"><div><div style="font-weight:700;">BAJAJ FINSERV SMALL CAP FUND - REGULAR - IDCW</div><div class="muted small">Equity · Small cap · Regular · IDCWs</div></div><div class="muted small">153610</div></div><div class="list-item"><div><div style="font-weight:700;">BAJAJ FINSERV SMALL CAP FUND - DIRECT - IDCW</div><div class="muted small">Equity · Small cap · Direct · IDCWs</div></div><div class="muted small">153611</div></div><div class="list-item"><div><div style="font-weight:700;">BAJAJ FINSERV SMALL CAP FUND - DIRECT - GROWTH</div><div class="muted small">Equity · Small cap · Direct · Growth</div></div><div class="muted small">153612</div></div></div>
       </div>
       <div class="card col-8">
         <div class="section-title">Overview</div>
         <div id="fundHeader" class="row" style="align-items:center; gap:12px;">
-          <div id="fundName" style="font-size:18px; font-weight:700;">Select a fund</div>
-          <div id="fundMeta" class="badge"></div>
-          <div id="fundISIN" class="badge"></div>
+          <div id="fundName" style="font-size:18px; font-weight:700;">quant Small Cap Fund - IDCW Option - Regular Plan </div>
+          <div id="fundMeta" class="badge">Equity</div>
+          <div id="fundISIN" class="badge">Code 100176</div>
         </div>
 
         <div class="row" style="margin-top:12px;">
-          <div class="metric"><div class="label">Category</div><div id="mCategory" class="value">-</div></div>
-          <div class="metric"><div class="label">Subcategory</div><div id="mSubcategory" class="value">-</div></div>
-          <div class="metric"><div class="label">Alpha (1Y)</div><div id="mAlpha" class="value">-</div></div>
-          <div class="metric"><div class="label">Beta (1Y)</div><div id="mBeta" class="value">-</div></div>
-          <div class="metric"><div class="label">Sharpe (1Y)</div><div id="mSharpe" class="value">-</div></div>
-          <div class="metric"><div class="label">Std Dev (1Y)</div><div id="mStd" class="value">-</div></div>
-          <div class="metric"><div class="label">Expense Ratio</div><div id="mExpense" class="value">- <span class="muted small">(estimated)</span></div></div>
-          <div class="metric"><div class="label">Exit Load</div><div id="mExitLoad" class="value">- <span class="muted small">(estimated)</span></div></div>
-          <div class="metric"><div class="label">AUM</div><div id="mAUM" class="value">- <span class="muted small">(estimated)</span></div></div>
-          <div class="metric"><div class="label">Fund Manager</div><div id="mManager" class="value">- <span class="muted small">(estimated)</span></div></div>
-          <div class="metric"><div class="label">NAV (Latest)</div><div id="mNAV" class="value">-</div></div>
-          <div class="metric"><div class="label">Rating</div><div id="mRating" class="value">- <span class="muted small">(computed)</span></div></div>
-          <div class="metric"><div class="label">Category Benchmark</div><div id="mBenchmark" class="value">NIFTY 50 TRI <span class="muted small">(proxy)</span></div></div>
+          <div class="metric"><div class="label">Category</div><div id="mCategory" class="value">Equity</div></div>
+          <div class="metric"><div class="label">Subcategory</div><div id="mSubcategory" class="value">Small cap</div></div>
+          <div class="metric"><div class="label">Alpha (1Y)</div><div id="mAlpha" class="value">31.80%</div></div>
+          <div class="metric"><div class="label">Beta (1Y)</div><div id="mBeta" class="value">-0.83</div></div>
+          <div class="metric"><div class="label">Sharpe (1Y)</div><div id="mSharpe" class="value">0.30</div></div>
+          <div class="metric"><div class="label">Std Dev (1Y)</div><div id="mStd" class="value">46.84%</div></div>
+          <div class="metric"><div class="label">Expense Ratio</div><div id="mExpense" class="value">1.5-2.5% <span class="muted small">(estimated)</span></div></div>
+          <div class="metric"><div class="label">Exit Load</div><div id="mExitLoad" class="value">1% (≤1Y) <span class="muted small">(estimated)</span></div></div>
+          <div class="metric"><div class="label">AUM</div><div id="mAUM" class="value">₹50-500 Cr <span class="muted small">(estimated)</span></div></div>
+          <div class="metric"><div class="label">Fund Manager</div><div id="mManager" class="value">Multiple Managers <span class="muted small">(estimated)</span></div></div>
+          <div class="metric"><div class="label">NAV (Latest)</div><div id="mNAV" class="value">207.0585</div></div>
+          <div class="metric"><div class="label">Rating</div><div id="mRating" class="value">3 / 5</div></div>
+          <div class="metric"><div class="label">Category Benchmark</div><div id="mBenchmark" class="value">NIFTY 50 Index <span class="muted small">(proxy)</span></div></div>
         </div>
 
         <div class="two-col" style="margin-top:12px;">
           <div class="card">
             <div class="section-title">Performance vs Benchmark</div>
-            <canvas id="perfChart" height="280"></canvas>
+            <canvas id="perfChart" height="560" width="836"></canvas>
             <div class="hint" style="margin-top:8px;">Benchmark uses proxy index NAV from `mfapi.in` where available, else synthetic 10% CAGR for demo. Alpha/Beta/Sharpe are based on daily log returns over the selected window.</div>
           </div>
           <div class="card">
-            <div class="section-title">Asset Allocation & Holdings</div>
+            <div class="section-title">Asset Allocation &amp; Holdings</div>
             <div class="row">
-              <div class="metric"><div class="label">Equity</div><div id="allocEquity" class="value">-</div></div>
+              <div class="metric"><div class="label">Equity</div><div id="allocEquity" class="value">70-85%</div></div>
               <div class="metric"><div class="label">Debt</div><div id="allocDebt" class="value">-</div></div>
-              <div class="metric"><div class="label">Cash</div><div id="allocCash" class="value">-</div></div>
+              <div class="metric"><div class="label">Cash</div><div id="allocCash" class="value">~1-10% (typical)</div></div>
             </div>
             <div style="margin-top:8px;" class="hint">Allocation estimates based on fund category. For detailed holdings, check fund factsheet or AMC website.</div>
-            <ul id="holdings" class="plain" style="margin-top:8px;"></ul>
+            <ul id="holdings" class="plain" style="margin-top:8px;"><li class="muted small">Detailed holdings require AMC factsheets or PRIME/CMOTS data</li><li class="muted small">Allocation estimates based on fund category and subcategory</li><li class="muted small">For exact holdings, check fund factsheet or AMC website</li></ul>
           </div>
         </div>
 
@@ -186,9 +438,9 @@ ul.plain li:last-child { border-bottom:0; }
           <div class="section-title">Tax Impact</div>
           <div class="hint">Approximate rules: Equity funds (≥65% equity): STCG 15% (&lt;= 1 year), LTCG 10% (&gt;1 year beyond ₹1L gains). Debt/Other: taxes per slab with indexation depending on rule changes. This is informational only.</div>
           <div class="row" style="margin-top:8px;">
-            <div class="metric"><div class="label">Type</div><div id="taxType" class="value">-</div></div>
-            <div class="metric"><div class="label">STCG</div><div id="taxSTCG" class="value">-</div></div>
-            <div class="metric"><div class="label">LTCG</div><div id="taxLTCG" class="value">-</div></div>
+            <div class="metric"><div class="label">Type</div><div id="taxType" class="value">Equity (≥65% equity)</div></div>
+            <div class="metric"><div class="label">STCG</div><div id="taxSTCG" class="value">15% (≤ 1 year)</div></div>
+            <div class="metric"><div class="label">LTCG</div><div id="taxLTCG" class="value">10% (&gt; 1 year, beyond ₹1L gains)</div></div>
           </div>
         </div>
 
@@ -205,7 +457,7 @@ ul.plain li:last-child { border-bottom:0; }
           • NSE MFSS – NSE's Mutual Fund Service System
         </div>
         <div>
-          <strong>API & Analytics:</strong><br>
+          <strong>API &amp; Analytics:</strong><br>
           • mfapi.in – Free Indian mutual fund API<br>
           • mftool documentation – Python library for AMFI data<br>
           • Morningstar India – Comprehensive analytics<br>
@@ -763,8 +1015,372 @@ function stopPolling() {
   if (state.timers.list) { clearInterval(state.timers.list); state.timers.list = null; }
   if (state.timers.fund) { clearInterval(state.timers.fund); state.timers.fund = null; }
 }
+
+// Advanced Filters Functionality
+let advancedFilters = {
+  risk: [],
+  minReturn: -50,
+  maxReturn: 100,
+  minAUM: 0,
+  maxAUM: 100000,
+  minExpense: 0,
+  maxExpense: 5,
+  fundHouse: []
+};
+
+// Toggle advanced filters panel
+qs('#advancedFiltersBtn').addEventListener('click', () => {
+  const panel = qs('#advancedFiltersPanel');
+  panel.classList.toggle('hidden');
+});
+
+// Apply advanced filters
+qs('#applyAdvancedFilters').addEventListener('click', () => {
+  // Collect filter values
+  advancedFilters.risk = Array.from(qsAll('input[data-filter="risk"]:checked')).map(cb => cb.value);
+  advancedFilters.minReturn = parseFloat(qs('#minReturn').value) || -50;
+  advancedFilters.maxReturn = parseFloat(qs('#maxReturn').value) || 100;
+  advancedFilters.minAUM = parseFloat(qs('#minAUM').value) || 0;
+  advancedFilters.maxAUM = parseFloat(qs('#maxAUM').value) || 100000;
+  advancedFilters.minExpense = parseFloat(qs('#minExpense').value) || 0;
+  advancedFilters.maxExpense = parseFloat(qs('#maxExpense').value) || 5;
+  advancedFilters.fundHouse = Array.from(qsAll('input[data-filter="fundHouse"]:checked')).map(cb => cb.value);
+  
+  applyFilters();
+  qs('#advancedFiltersPanel').classList.add('hidden');
+});
+
+// Clear all advanced filters
+qs('#clearAdvancedFilters').addEventListener('click', () => {
+  // Reset all advanced filter inputs
+  qsAll('input[data-filter]').forEach(cb => cb.checked = false);
+  qs('#minReturn').value = '';
+  qs('#maxReturn').value = '';
+  qs('#minAUM').value = '';
+  qs('#maxAUM').value = '';
+  qs('#minExpense').value = '';
+  qs('#maxExpense').value = '';
+  
+  // Reset advanced filters object
+  advancedFilters = {
+    risk: [],
+    minReturn: -50,
+    maxReturn: 100,
+    minAUM: 0,
+    maxAUM: 100000,
+    minExpense: 0,
+    maxExpense: 5,
+    fundHouse: []
+  };
+  
+  applyFilters();
+});
+
+// Enhanced applyFilters function with advanced filters
+function applyFilters() {
+  const term = qs('#search').value.trim().toLowerCase();
+  const cat = qs('#category').value;
+  const subcat = qs('#subcategory').value;
+  const plan = qs('#plan').value;
+  const opt = qs('#option').value;
+  
+  const filtered = state.list.filter(x => {
+    const name = (x.schemeName || '').toLowerCase();
+    if (term && !name.includes(term)) return false;
+    const meta = parseMetaFromName(x.schemeName || '');
+    if (cat && meta.category !== cat) return false;
+    if (subcat && meta.subcategory !== subcat) return false;
+    if (plan && meta.plan !== plan) return false;
+    if (opt && meta.option !== opt) return false;
+    
+    // Apply advanced filters
+    if (advancedFilters.risk.length > 0) {
+      const risk = estimateRiskLevel(x.schemeName);
+      if (!advancedFilters.risk.includes(risk)) return false;
+    }
+    
+    // Return filters (using estimated data)
+    const returns = estimateReturns(x.schemeName);
+    if (returns < advancedFilters.minReturn || returns > advancedFilters.maxReturn) return false;
+    
+    const aum = estimateAUM(x.schemeName);
+    if (aum < advancedFilters.minAUM || aum > advancedFilters.maxAUM) return false;
+    
+    const expense = estimateExpenseRatio(x.schemeName);
+    if (expense < advancedFilters.minExpense || expense > advancedFilters.maxExpense) return false;
+    
+    if (advancedFilters.fundHouse.length > 0) {
+      const fundHouse = getFundHouse(x.schemeName);
+      if (!advancedFilters.fundHouse.includes(fundHouse)) return false;
+    }
+    
+    return true;
+  });
+  renderFundList(filtered);
+}
+
+// Helper functions for advanced filtering
+function estimateRiskLevel(fundName) {
+  const name = fundName.toLowerCase();
+  if (name.includes('small cap') || name.includes('sector') || name.includes('thematic')) return 'high';
+  if (name.includes('mid cap') || name.includes('multi cap') || name.includes('large & mid')) return 'moderate';
+  if (name.includes('large cap') || name.includes('liquid') || name.includes('overnight')) return 'low';
+  return 'moderate'; // default
+}
+
+function estimateReturns(fundName) {
+  // This would ideally use actual data, but we'll estimate based on fund type
+  const name = fundName.toLowerCase();
+  if (name.includes('small cap')) return 15;
+  if (name.includes('mid cap')) return 13;
+  if (name.includes('large cap')) return 11;
+  if (name.includes('debt') || name.includes('liquid')) return 6;
+  if (name.includes('hybrid')) return 9;
+  return 10; // default
+}
+
+function estimateAUM(fundName) {
+  // Estimate based on fund house popularity (this is simplified)
+  const name = fundName.toLowerCase();
+  if (name.includes('sbi') || name.includes('hdfc') || name.includes('icici')) return 50000;
+  if (name.includes('axis') || name.includes('kotak')) return 20000;
+  return 5000; // default
+}
+
+function estimateExpenseRatio(fundName) {
+  const name = fundName.toLowerCase();
+  if (name.includes('direct')) return 0.5;
+  if (name.includes('index')) return 0.2;
+  return 1.5; // default for regular plans
+}
+
+function getFundHouse(fundName) {
+  const name = fundName.toLowerCase();
+  if (name.includes('sbi')) return 'sbi';
+  if (name.includes('hdfc')) return 'hdfc';
+  if (name.includes('icici')) return 'icici';
+  if (name.includes('axis')) return 'axis';
+  if (name.includes('kotak')) return 'kotak';
+  if (name.includes('nippon') || name.includes('reliance')) return 'nipp';
+  if (name.includes('uti')) return 'uti';
+  if (name.includes('franklin')) return 'franklin';
+  return 'other';
+}
+
+// Calculator Functionality
+qs('#calculatorBtn').addEventListener('click', () => {
+  qs('#calculatorSection').classList.remove('hidden');
+});
+
+qs('#closeCalculator').addEventListener('click', () => {
+  qs('#calculatorSection').classList.add('hidden');
+});
+
+// Calculator tab switching
+qsAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    qsAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    qsAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    qs(`#${tab}Calculator`).classList.add('active');
+  });
+});
+
+// SIP Calculator functionality
+function updateSIPCalculation() {
+  const amount = parseFloat(qs('#sipAmount').value);
+  const rate = parseFloat(qs('#sipReturn').value) / 100 / 12; // monthly rate
+  const months = parseInt(qs('#sipPeriod').value) * 12;
+  
+  // SIP formula: FV = P * [((1 + r)^n - 1) / r] * (1 + r)
+  const futureValue = amount * (Math.pow(1 + rate, months) - 1) / rate * (1 + rate);
+  const investedAmount = amount * months;
+  const estimatedReturns = futureValue - investedAmount;
+  
+  qs('#sipInvested').textContent = '₹' + Math.round(investedAmount).toLocaleString('en-IN');
+  qs('#sipReturns').textContent = '₹' + Math.round(estimatedReturns).toLocaleString('en-IN');
+  qs('#sipTotal').textContent = '₹' + Math.round(futureValue).toLocaleString('en-IN');
+}
+
+// Lump Sum Calculator functionality
+function updateLumpSumCalculation() {
+  const principal = parseFloat(qs('#lumpsumAmount').value);
+  const rate = parseFloat(qs('#lumpsumReturn').value) / 100;
+  const years = parseInt(qs('#lumpsumPeriod').value);
+  
+  // Compound interest formula: A = P * (1 + r)^t
+  const futureValue = principal * Math.pow(1 + rate, years);
+  const estimatedReturns = futureValue - principal;
+  
+  qs('#lumpsumInvested').textContent = '₹' + Math.round(principal).toLocaleString('en-IN');
+  qs('#lumpsumReturns').textContent = '₹' + Math.round(estimatedReturns).toLocaleString('en-IN');
+  qs('#lumpsumTotal').textContent = '₹' + Math.round(futureValue).toLocaleString('en-IN');
+}
+
+// Sync range and number inputs for SIP
+['sipAmount', 'sipReturn', 'sipPeriod'].forEach(id => {
+  const range = qs('#' + id);
+  const number = qs('#' + id + 'Input');
+  
+  range.addEventListener('input', () => {
+    number.value = range.value;
+    updateSIPCalculation();
+  });
+  
+  number.addEventListener('input', () => {
+    range.value = number.value;
+    updateSIPCalculation();
+  });
+});
+
+// Sync range and number inputs for Lump Sum
+['lumpsumAmount', 'lumpsumReturn', 'lumpsumPeriod'].forEach(id => {
+  const range = qs('#' + id);
+  const number = qs('#' + id + 'Input');
+  
+  range.addEventListener('input', () => {
+    number.value = range.value;
+    updateLumpSumCalculation();
+  });
+  
+  number.addEventListener('input', () => {
+    range.value = number.value;
+    updateLumpSumCalculation();
+  });
+});
+
+// Initialize calculator with default values
+updateSIPCalculation();
+updateLumpSumCalculation();
+
+// Fund Comparison Functionality
+let selectedFundsForComparison = [];
+
+qs('#compareBtn').addEventListener('click', () => {
+  if (selectedFundsForComparison.length >= 2) {
+    showComparisonModal();
+  }
+});
+
+qs('#closeComparison').addEventListener('click', () => {
+  qs('#comparisonModal').classList.add('hidden');
+});
+
+function toggleFundSelection(fundItem, schemeCode) {
+  const checkbox = fundItem.querySelector('.fund-checkbox');
+  const index = selectedFundsForComparison.findIndex(f => f.schemeCode === schemeCode);
+  
+  if (index > -1) {
+    selectedFundsForComparison.splice(index, 1);
+    fundItem.classList.remove('selected');
+    checkbox.checked = false;
+  } else {
+    if (selectedFundsForComparison.length < 5) { // Limit to 5 funds
+      selectedFundsForComparison.push(fundItem.fundData);
+      fundItem.classList.add('selected');
+      checkbox.checked = true;
+    } else {
+      alert('You can compare up to 5 funds at a time.');
+      return;
+    }
+  }
+  
+  updateCompareButton();
+}
+
+function updateCompareButton() {
+  const compareBtn = qs('#compareBtn');
+  const count = selectedFundsForComparison.length;
+  compareBtn.textContent = `Compare (${count})`;
+  compareBtn.disabled = count < 2;
+}
+
+function showComparisonModal() {
+  const modal = qs('#comparisonModal');
+  const content = qs('#comparisonContent');
+  
+  if (selectedFundsForComparison.length < 2) return;
+  
+  // Create comparison table
+  let tableHTML = '<table class="comparison-table"><thead><tr><th>Fund Name</th><th>Category</th><th>Risk</th><th>1Y Return</th><th>3Y Return</th><th>5Y Return</th><th>AUM (₹ Cr)</th><th>Expense Ratio</th></tr></thead><tbody>';
+  
+  selectedFundsForComparison.forEach(fund => {
+    const meta = parseMetaFromName(fund.schemeName);
+    const risk = estimateRiskLevel(fund.schemeName);
+    const returns1Y = estimateReturns(fund.schemeName);
+    const returns3Y = estimateReturns(fund.schemeName) - 2; // rough estimate
+    const returns5Y = estimateReturns(fund.schemeName) - 1; // rough estimate
+    const aum = estimateAUM(fund.schemeName);
+    const expense = estimateExpenseRatio(fund.schemeName);
+    
+    tableHTML += `<tr>
+      <td><strong>${fund.schemeName}</strong></td>
+      <td>${meta.category}</td>
+      <td><span class="badge">${risk.toUpperCase()}</span></td>
+      <td>${returns1Y.toFixed(1)}%</td>
+      <td>${returns3Y.toFixed(1)}%</td>
+      <td>${returns5Y.toFixed(1)}%</td>
+      <td>₹${aum.toLocaleString('en-IN')}</td>
+      <td>${expense.toFixed(2)}%</td>
+    </tr>`;
+  });
+  
+  tableHTML += '</tbody></table>';
+  content.innerHTML = tableHTML;
+  modal.classList.remove('hidden');
+}
+
+// Enhanced renderFundList function with selection checkboxes
+function renderFundListEnhanced(funds) {
+  const ul = qs('#fundList');
+  ul.innerHTML = '';
+  if (!funds.length) {
+    ul.innerHTML = '<div class="muted">No funds match your filters.</div>';
+    return;
+  }
+  funds.forEach(fund => {
+    const li = document.createElement('div');
+    li.className = 'list-item';
+    li.fundData = fund;
+    
+    // Check if this fund is already selected
+    const isSelected = selectedFundsForComparison.some(f => f.schemeCode === fund.schemeCode);
+    if (isSelected) li.classList.add('selected');
+    
+    li.innerHTML = `
+      <div style="display:flex; align-items:center;">
+        <input type="checkbox" class="fund-checkbox" ${isSelected ? 'checked' : ''}>
+        <div>
+          <div style="font-weight:600;">${fund.schemeName}</div>
+          <div class="muted small">${parseMetaFromName(fund.schemeName).category}</div>
+        </div>
+      </div>
+      <div class="muted small">Code: ${fund.schemeCode}</div>
+    `;
+    
+    // Add click handlers
+    li.addEventListener('click', (e) => {
+      if (e.target.classList.contains('fund-checkbox')) {
+        e.stopPropagation();
+        toggleFundSelection(li, fund.schemeCode);
+      } else {
+        selectFund(fund);
+      }
+    });
+    
+    ul.appendChild(li);
+  });
+}
+
+// Override the original renderFundList function
+const originalRenderFundList = renderFundList;
+renderFundList = function(funds) {
+  renderFundListEnhanced(funds);
+};
 </script>
-</body>
-</html>
 
 
+
+
+</body></html>
